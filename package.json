@@ -1,0 +1,16 @@
+{
+  "name": "aw-ext-effort-inline",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent Wrangler extension: moves the effort picker next to the model selector.",
+  "wranglerExtension": {
+    "id": "effort-inline",
+    "label": "Effort beside model",
+    "description": "Moves the effort picker out of Advanced options and puts it next to the model selector.",
+    "requires": []
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
