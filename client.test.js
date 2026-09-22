@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import client from './public/client.js';
 
 // Enough of a DOM for one <select>: the contribution only ever builds options
@@ -21,6 +22,8 @@ function stubHost() {
   const select = stubSelect();
   return { select, innerHTML: '', querySelector: () => select };
 }
+
+const CSS = fs.readFileSync(new URL('./public/effort-inline.css', import.meta.url), 'utf8');
 
 // The board's registrar, as slots.forExtension() hands it over.
 function mountContribution() {
@@ -85,4 +88,33 @@ test('unmount releases the select and fields() stays safe', () => {
   contribution.update(host, ctx('claude'));
   contribution.unmount(host);
   assert.deepEqual(contribution.fields(), { effort: undefined });
+});
+
+// ── The side-by-side layout ───────────────────────────────────────────────
+// It is CSS, so there is nothing to execute — but the stylesheet and the
+// markup are two halves of one mechanism, and a rename on either side is
+// silent. These assert they still name the same things.
+
+test('the markup is one floatable column plus a clear, not loose siblings', () => {
+  const { host } = mountContribution();
+  assert.match(host.innerHTML, /<div class="ei-field">.*<label[^>]*>Effort<\/label>.*<select id="ei-effort"><\/select>.*<\/div>/);
+  // The clear has to come AFTER the field: it is what closes the float row so
+  // the worktree box below does not ride up beside it.
+  assert.ok(host.innerHTML.indexOf('ei-clear') > host.innerHTML.indexOf('ei-field'));
+});
+
+test('the stylesheet floats the model row and this field against each other', () => {
+  for (const sel of ['#m-model-row:not(.hidden)', '.ei-field', '.ei-clear']) {
+    assert.ok(CSS.includes(sel), `stylesheet should still target ${sel}`);
+  }
+  // The pairing rides on index.html putting the `model` anchor host directly
+  // after the row — asserted core-side by dispatch-modal.test.js. If that
+  // adjacency ever goes, this selector is what stops matching.
+  assert.match(CSS, /#m-model-row:not\(\.hidden\) \+ \.ext-dispatch-slot \.ei-field/);
+});
+
+test('the field drops core\'s contribution lead-in, so the two labels line up', () => {
+  // styles.css gives a contribution's first element 12px of top margin; inside
+  // a float that is 12px of misalignment against the model row.
+  assert.match(CSS, /\.ei-field\s*\{[^}]*margin-top:\s*0/s);
 });

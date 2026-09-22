@@ -1,6 +1,8 @@
 // Browser half. One `dispatch.field` contribution at the `model` anchor, which
-// sits just below #m-model-row, so the effort picker reads as part of the model
-// choice rather than hiding in Advanced options.
+// sits just after #m-model-row, so the effort picker reads as part of the model
+// choice rather than hiding in Advanced options. The two end up side by side
+// rather than stacked, which is entirely the stylesheet's doing — see
+// public/effort-inline.css for why that is layout and not a DOM move.
 
 // The effort vocabulary is per-agent and comes off ctx.agents (the board's own
 // `agents` announcement); this is only the fallback for the window before that
@@ -29,8 +31,12 @@ export default {
       // keeps its value, which is why fields() below writes `effort` back.
       hides: ['effort'],
 
+      // The label and select are wrapped in .ei-field because the stylesheet
+      // floats them as ONE column beside #m-model-row; loose siblings would
+      // float individually. .ei-clear closes the float row so the worktree box
+      // below stays below.
       mount(el) {
-        el.innerHTML = '<label for="ei-effort">Effort</label><select id="ei-effort"></select>';
+        el.innerHTML = '<div class="ei-field"><label for="ei-effort">Effort</label><select id="ei-effort"></select></div><div class="ei-clear"></div>';
         select = el.querySelector('#ei-effort');
       },
 

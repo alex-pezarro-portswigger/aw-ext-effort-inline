@@ -1,0 +1,33 @@
+/* Puts the effort picker BESIDE the model selector rather than under it.
+   Loaded as the manifest's `styles` <link>, which the board adds before the
+   client module and takes back off on unload — so nothing here outlives the
+   extension and styles a row core still draws.
+
+   The two boxes are ADJACENT SIBLINGS, which is the whole reason this is
+   layout and not DOM surgery: index.html puts the `model` anchor host
+   immediately after #m-model-row, and both that host (.ext-dispatch-slot) and
+   the per-contribution wrapper core mounts inside it (.ext-slot) are
+   `display: contents`. So .ei-field lands in #m-dispatch-fields' block flow
+   right next to the model row, and two floats pair them up without either one
+   having to be moved inside a wrapper the other owns. Moving #m-model-row into
+   this extension's own element would read better in the DOM and be wrong: the
+   element is core's, and teardown removes ours with everything inside it. */
+
+/* :not(.hidden) because applyDispatchFieldVeto hides the model row by class
+   when some OTHER extension replaces it. There is then nothing to sit beside,
+   so the pairing lapses and the effort picker goes back to full width. */
+#m-model-row:not(.hidden) { float: left; width: calc(50% - 6px); }
+
+#m-model-row:not(.hidden) + .ext-dispatch-slot .ei-field {
+  float: right;
+  width: calc(50% - 6px);
+  /* Drops core's 12px contribution lead-in (styles.css, `.ext-slot >
+     :first-child`), which would push this column 12px below the model row.
+     The 10px on .modal-card label is inside BOTH boxes, so the two labels
+     still line up. */
+  margin-top: 0;
+}
+
+/* Floats are out of flow, so the worktree box below would ride up alongside
+   them without this. It sits inside the contribution, after the field. */
+.ei-clear { clear: both; }
